@@ -75,6 +75,7 @@ def performance_worker(args):
 
 class EvolutionaryStrategy():
     evolution = 0
+    _previous_scores = -1
 
     def __init__(self, name, model_function, env_function,
                  population_size=50,
@@ -131,7 +132,11 @@ class EvolutionaryStrategy():
             self.selection_cutoff *= self.selection_cutoff_decay_rate
 
         n_selected = int(self.population_size * self.selection_cutoff)
-        scores = self._evaluate(self.population)
+
+        if type(self._previous_scores) is not int:
+            scores = self._previous_scores
+        else:
+            scores = self._evaluate(self.population)
 
         lucky_factor = 0.20
         top_selection, bottom_selection = int(
@@ -159,6 +164,8 @@ class EvolutionaryStrategy():
         print('evolution {}: top_generation_performance = {}, '
               'average_generation_performance = {}'.format(
                   self.evolution, best_performance, average_performance))
+
+        self._previous_scores = generation_evaluation
 
         if not return_population:
             return self.population[int(generation_evaluation[0, 0])], \
