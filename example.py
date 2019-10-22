@@ -15,6 +15,7 @@ def model_function(env):
     model = Sequential()
     model.add(Dense(input_shape=env.observation_space.shape,
                     units=16, activation='linear', use_bias=False))
+    model.add(Dense(units=8, activation='linear', use_bias=False))
     model.add(Dense(units=env.action_space.n,
                     activation='linear', use_bias=False))
     model.compile(loss='mse', optimizer='adam')
@@ -25,7 +26,7 @@ def model_function(env):
 es = evolve.EvolutionaryStrategy('demo', model_function, env_function)
 
 evolution_track = []
-for _ in range(1):
+for _ in range(5):
     candidate, evolution_average = es.evolve_step()
     evolution_track.append(evolution_average)
 
