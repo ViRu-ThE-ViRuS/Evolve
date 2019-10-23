@@ -212,6 +212,11 @@ class EvolutionaryStrategy():
             original_shape = np.array(progeny[layer]).shape
             flat = np.reshape(progeny[layer], -1)
 
+            padded_layer = False
+            if len(original_shape) == 1:
+                original_shape += (1, )
+                padded_layer = True
+
             layer_mutations = int(self.mutation_rate *
                                   np.multiply(*original_shape))
             while layer_mutations != 0:
@@ -223,6 +228,9 @@ class EvolutionaryStrategy():
                 flat[chromosome_index] = (
                     high - low) * np.random.sample() + low
                 layer_mutations -= 1
+
+            if padded_layer:
+                original_shape = original_shape[:-1]
 
             progeny[layer] = flat.reshape(original_shape)
 
