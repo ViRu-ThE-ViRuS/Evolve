@@ -1,0 +1,13 @@
+[MASTER]
+jobs=0
+
+[MESSAGES CONTROL]
+disable=
+    import-outside-toplevel,
+    import-error,
+    too-many-locals,
+    too-many-instance-attributes,
+    too-many-arguments,
+    not-an-iterable
+    
+[pycodestyle]
