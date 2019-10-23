@@ -20,7 +20,7 @@ def _create_model_worker(_q, name, env_function, model_function):
     _q.put([model_file, weights_file])
 
 
-def create_model(name, env_function, model_function):
+def _create_model(name, model_function, env_function):
     _q = Queue()
     worker = Process(
         target=_create_model_worker,

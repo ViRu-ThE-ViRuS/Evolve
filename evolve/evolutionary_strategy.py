@@ -5,7 +5,7 @@ import os
 import logging
 import numpy as np
 
-from .generate import create_model
+from .generate import _create_model
 
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -89,8 +89,8 @@ class EvolutionaryStrategy():
         self.name = name
         self.env_function = env_function
 
-        self.model_file, self.weights_file = create_model(
-            self.name, self.env_function, model_function)
+        self.model_file, self.weights_file = _create_model(
+            self.name, model_function, self.env_function)
 
         self.population_size = population_size
 
