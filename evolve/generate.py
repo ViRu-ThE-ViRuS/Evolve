@@ -1,7 +1,7 @@
 from multiprocessing import Process, Queue
 
 
-def _create_model_worker(q, name, env_function, model_function):
+def _create_model_worker(_q, name, env_function, model_function):
     model_file = name + '_model'
     weights_file = name + '_weights'
 
@@ -17,14 +17,15 @@ def _create_model_worker(q, name, env_function, model_function):
     print('Weights saved in file = {}'.format(weights_file))
 
     K.clear_session()
-    q.put([model_file, weights_file])
+    _q.put([model_file, weights_file])
 
 
 def create_model(name, env_function, model_function):
-    q = Queue()
-    worker = Process(target=_create_model_worker, args=[
-                     q, name, env_function, model_function])
+    _q = Queue()
+    worker = Process(
+        target=_create_model_worker,
+        args=[_q, name, env_function, model_function])
     worker.start()
     worker.join()
 
-    return q.get()
+    return _q.get()

@@ -1,11 +1,11 @@
 import evolve
 
-env_name = 'CartPole-v1'
+ENV_NAME = 'CartPole-v1'
 
 
 def env_function():
     import gym
-    return gym.make(env_name)
+    return gym.make(ENV_NAME)
 
 
 def model_function(env):
@@ -23,11 +23,11 @@ def model_function(env):
     return model
 
 
-es = evolve.EvolutionaryStrategy('demo', model_function, env_function)
+ES = evolve.EvolutionaryStrategy('demo', model_function, env_function)
 
-evolution_track = []
+EVOLUTION_TRACK = []
 for _ in range(5):
-    candidate, evolution_average = es.evolve_step()
-    evolution_track.append(evolution_average)
+    candidate, evolution_average = ES.evolve_step()
+    EVOLUTION_TRACK.append(evolution_average)
 
-es.performance(candidate)
+ES.performance(candidate)

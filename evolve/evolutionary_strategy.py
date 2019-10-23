@@ -1,11 +1,12 @@
-from .generate import create_model
-import numpy as np
 from multiprocessing.pool import Pool
 import multiprocessing as mp
 import pickle
 import os
-
 import logging
+import numpy as np
+
+from .generate import create_model
+
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -128,23 +129,23 @@ class EvolutionaryStrategy():
         print('EVOLUTION {}'.format(self.evolution))
 
         print('\tselecting from population...')
-        if self.evolution-1:
+        if self.evolution - 1:
             self.selection_cutoff *= self.selection_cutoff_decay_rate
 
         n_selected = int(self.population_size * self.selection_cutoff)
 
-        if type(self._previous_scores) is not int:
+        if not isinstance(self._previous_scores, int):
             scores = self._previous_scores
         else:
             scores = self._evaluate(self.population)
 
         lucky_factor = 0.20
         top_selection, bottom_selection = int(
-            n_selected*(1-lucky_factor)), int(n_selected*lucky_factor)
+            n_selected * (1 - lucky_factor)), int(n_selected * lucky_factor)
         scores, scrap = scores[:n_selected], scores[n_selected:]
         scores = scores[np.random.choice(np.arange(n_selected), top_selection)]
         scrap = scrap[np.random.choice(
-            np.arange(self.population_size-n_selected), bottom_selection)]
+            np.arange(self.population_size - n_selected), bottom_selection)]
         selected_candidates = np.vstack((scores, scrap))
 
         selected_population = []
@@ -202,7 +203,7 @@ class EvolutionaryStrategy():
         return np.array(bred)
 
     def _mutate(self, progeny):
-        if self.evolution-1:
+        if self.evolution - 1:
             self.mutation_rate *= self.mutation_decay_rate
             self.mutation *= self.mutation_decay_rate
 
@@ -220,7 +221,8 @@ class EvolutionaryStrategy():
 
                 low = chromosome - self.mutation * chromosome
                 high = chromosome + self.mutation * chromosome
-                flat[chromosome_index] = (high-low) * np.random.sample() + low
+                flat[chromosome_index] = (
+                    high - low) * np.random.sample() + low
                 layer_mutations -= 1
 
             progeny[layer] = flat.reshape(original_shape)
@@ -230,7 +232,7 @@ class EvolutionaryStrategy():
     def _crossover(self, parents):
         if not self.variable_crossed_progeny:
             crossover_rate = 0.50
-            crossover_p = [crossover_rate, 1-crossover_rate]
+            crossover_p = [crossover_rate, 1 - crossover_rate]
         else:
             scores = self._evaluate(parents)
             if scores[0, 0] == 0:
@@ -238,19 +240,19 @@ class EvolutionaryStrategy():
             else:
                 p_left, p_right = scores[1, 1], scores[0, 1]
 
-            crossover_p = [p_left/(p_left + p_right),
-                           p_right/(p_left + p_right)]
+            crossover_p = [p_left / (p_left + p_right),
+                           p_right / (p_left + p_right)]
 
         left, right = parents[0], parents[1]
 
         progeny = []
-        for layer in range(len(left)):
+        for layer, _ in enumerate(left):
             original_shape = np.array(left[layer]).shape
             left_flat, right_flat = np.reshape(
                 left[layer], -1), np.reshape(right[layer], -1)
 
             progeny_layer = []
-            for index in range(len(left_flat)):
+            for index, _ in enumerate(left_flat):
                 chance = np.random.choice(2, p=crossover_p)
 
                 if chance:
