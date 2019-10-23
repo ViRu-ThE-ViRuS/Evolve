@@ -85,7 +85,7 @@ class EvolutionaryStrategy():
                  variable_crossed_progeny=True,
                  selection_cutoff_decay=True,
                  selection_cutoff_decay_rate=0.95, selection_cutoff=0.20,
-                 test_episodes=5, parallel=True):
+                 test_episodes=5):
         self.name = name
         self.env_function = env_function
 
@@ -105,7 +105,6 @@ class EvolutionaryStrategy():
             if selection_cutoff_decay else 1
         self.selection_cutoff = selection_cutoff
 
-        self.parallel = parallel
         self.pool = Pool(processes=mp.cpu_count())
 
         args = [[self.weights_file]]
