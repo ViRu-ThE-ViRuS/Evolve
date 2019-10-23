@@ -1,7 +1,21 @@
+'''
+Generate the model files
+'''
+
 from multiprocessing import Process, Queue
 
 
-def _create_model_worker(_q, name, env_function, model_function):
+def _create_model_worker(_q, name, model_function, env_function):
+    '''
+    Create the model files
+
+    Arguments:
+        _q -- the queue to put the names of the created files in
+        name -- model name
+        model_function -- function which returns the desired model
+        env_function -- function which returns a new environment
+    '''
+
     model_file = name + '_model'
     weights_file = name + '_weights'
 
@@ -21,10 +35,22 @@ def _create_model_worker(_q, name, env_function, model_function):
 
 
 def _create_model(name, model_function, env_function):
+    '''
+    Create the model files and get the respective file names
+
+    Arguments:
+        name -- model name
+        model_function -- function which returns the desired model
+        env_function -- function which returns a new environment
+
+    Returns:
+        [model_file name, weights_file name]
+    '''
+
     _q = Queue()
     worker = Process(
         target=_create_model_worker,
-        args=[_q, name, env_function, model_function])
+        args=[_q, name, model_function, env_function])
     worker.start()
     worker.join()
 

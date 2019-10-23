@@ -1,3 +1,7 @@
+'''
+EvolutionStrategy trainer class
+'''
+
 from multiprocessing.pool import Pool
 import multiprocessing as mp
 import pickle
@@ -12,6 +16,16 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
 def load_worder(args):
+    '''
+    Load the model weights
+
+    Arguments:
+        args -- [weights_file]
+
+    Returns:
+        The weights list from the weights_file
+    '''
+
     weights_file = args[0]
     with open(weights_file, 'rb') as file:
         weights = pickle.load(file)
@@ -20,6 +34,16 @@ def load_worder(args):
 
 
 def evaluate_worker(args):
+    '''
+    Evaluate a given candidate
+
+    Arguments:
+        args -- [candidate, model_file, env_function, test_episodes, population_index]
+
+    Returns:
+        [population_index, average rewards over test_episodes]
+    '''
+
     candidate, model_file, env_function, test_episodes, index = args
     from tensorflow.keras.models import load_model
     from tensorflow.keras import backend as K
@@ -47,6 +71,16 @@ def evaluate_worker(args):
 
 
 def performance_worker(args):
+    '''
+    Evaluate the performance of the given candidate
+
+    Arguments:
+        args -- [candidate, model_file, env_function, test_episodes]
+
+    Returns:
+        rewards of the candidate over test_episodes
+    '''
+
     candidate, model_file, env_function, test_episodes = args
 
     from tensorflow.keras.models import load_model
@@ -75,6 +109,10 @@ def performance_worker(args):
 
 
 class EvolutionaryStrategy():
+    '''
+    EvolutionStrategy trainer
+    '''
+
     evolution = 0
     _previous_scores = -1
 
@@ -83,9 +121,29 @@ class EvolutionaryStrategy():
                  mutation=3.0, mutation_rate=0.80, mutation_decay=True,
                  mutation_decay_rate=0.99,
                  variable_crossed_progeny=True,
-                 selection_cutoff_decay=True,
-                 selection_cutoff_decay_rate=0.95, selection_cutoff=0.20,
-                 test_episodes=5):
+                 selection_cutoff=0.20, selection_cutoff_decay=True,
+                 selection_cutoff_decay_rate=0.95, test_episodes=5):
+        '''
+        Constructor
+
+        Arguments:
+            name -- model name
+            model_function -- function which returns the desired keras model
+            env_function -- function which returns a new environment
+            population_size -- size of the population to breed
+            mutation -- amount of possible mutation for a given feature
+            mutation_rate -- how many possible features to mutate
+            mutation_decay -- decay the mutation_rate and mutation?
+            mutation_decay_rate -- decay rate for mutation_rate and mutation
+            variable_crossed_progeny -- non uniform dependence of progeny on parents,
+                                        based on their individual performance
+            selection_cutoff -- selection_cutoff
+            selection_cutoff_decay -- decay the number of candidates selected from
+                                        the given population?
+            selection_cutoff_decay_rate -- decay rate for the selection_cutoff
+            test_episodes -- number of episodes to evaluate the given candidate over
+        '''
+
         self.name = name
         self.env_function = env_function
 
@@ -124,6 +182,19 @@ class EvolutionaryStrategy():
         os.remove(self.weights_file)
 
     def evolve_step(self, return_population=False):
+        '''
+        Complete one evolution step. Include selection, breeding, and mutation
+
+        Arguments:
+            return_population -- return the complete evolved population
+
+        Returns
+            return_population is True -- complete evolved population,
+                                            average performance of evolution
+            return_population is False -- top performing candidate,
+                                            average performance of evolution
+        '''
+
         self.evolution += 1
         print('EVOLUTION {}'.format(self.evolution))
 
@@ -174,6 +245,17 @@ class EvolutionaryStrategy():
             return self.population, average_performance
 
     def _evaluate(self, population, test_episodes=None):
+        '''
+        Evaluate the given population
+
+        Arguments:
+            population -- the population to evaluate
+            test_episodes -- the number of episodes to evaluate each candidate over
+
+        Returns:
+            sorted list of [average_score, index] for each candidate in the population
+        '''
+
         if not test_episodes:
             test_episodes = self.test_episodes
 
@@ -192,6 +274,18 @@ class EvolutionaryStrategy():
         return scores
 
     def _breed(self, population, progeny_to_generate):
+        '''
+        Breed within the given populatino to generate progeny.
+        Involves crossing, mutating.
+
+        Arguments:
+            population -- the population to breed within
+            progeny_to_generate -- the number of progeny to generate
+
+        Returns:
+            the bred (cross, mutated) progeny
+        '''
+
         bred = []
         for _ in range(progeny_to_generate):
             left, right = np.random.choice(len(population), 2)
@@ -202,6 +296,16 @@ class EvolutionaryStrategy():
         return np.array(bred)
 
     def _mutate(self, progeny):
+        '''
+        Mutates the given progeny
+
+        Arguments:
+            progeny -- progeny to mutate
+
+        Returns:
+            the mutated progeny
+        '''
+
         if self.evolution - 1:
             self.mutation_rate *= self.mutation_decay_rate
             self.mutation *= self.mutation_decay_rate
@@ -237,6 +341,16 @@ class EvolutionaryStrategy():
         return progeny
 
     def _crossover(self, parents):
+        '''
+        Crossovers the given parents to generate a progeny
+
+        Arguments:
+            parents -- [parent1, parent2] to cross over
+
+        Returns:
+            the crossed progeny
+        '''
+
         if not self.variable_crossed_progeny:
             crossover_rate = 0.50
             crossover_p = [crossover_rate, 1 - crossover_rate]
@@ -272,6 +386,19 @@ class EvolutionaryStrategy():
         return progeny
 
     def performance(self, candidate, test_episodes=50, get_rewards=False):
+        '''
+        Evaluate the performance of the given candidate over the given episodes
+
+        Arguments:
+            candidate -- the candidate to evaluate
+            test_episodes -- the number of episodes to evaluate the candidate over
+            get_rewards -- return all the rewards?
+
+        Returns:
+            get_rewards is False -- None
+            get_rewards is True -- rewards of the candidate over test_episodes
+        '''
+
         args = [[candidate, self.model_file, self.env_function,
                  test_episodes]]
 
