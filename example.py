@@ -1,14 +1,26 @@
+'''
+Example program, demonstrating use of evolve
+'''
+
 import evolve
 
 ENV_NAME = 'CartPole-v1'
 
 
 def env_function():
+    '''
+    Returns a new environment
+    '''
+
     import gym
     return gym.make(ENV_NAME)
 
 
 def model_function(env):
+    '''
+    Returns a keras model
+    '''
+
     from tensorflow.keras.models import Sequential
     from tensorflow.keras.layers import Dense
 
