@@ -8,6 +8,8 @@ disable=
     too-many-locals,
     too-many-instance-attributes,
     too-many-arguments,
-    not-an-iterable
+    not-an-iterable,
+    no-else-return,
+    inconsistent-return-statements
     
 [pycodestyle]
