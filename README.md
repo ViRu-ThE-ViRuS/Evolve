@@ -37,12 +37,19 @@ $ pip install git+https://github.com/ViRu-ThE-ViRuS/Evolve.git
 
 - documentation is **in progress**
 
-- run maintainence scripts:
-    - run checks:
-        ```
-        $ ./scripts/check.sh
-        ```
-    - run automated fixes:
-        ```
-        $ ./scripts/fix.sh
-        ```
+##### Installation
+- run setup:
+    ```
+    $ ./scripts/setup.sh
+    $ source venv/bin/activate
+    ```
+
+##### Run Scripts
+- run checks:
+    ```
+    $ ./scripts/check.sh
+    ```
+- run automated fixes:
+    ```
+    $ ./scripts/fix.sh
+    ```
