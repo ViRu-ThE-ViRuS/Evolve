@@ -14,10 +14,15 @@ def model_function(env):
 
     model = Sequential()
     model.add(Dense(input_shape=env.observation_space.shape,
-                    units=16, activation='linear', use_bias=False))
-    model.add(Dense(units=8, activation='linear', use_bias=False))
+                    units=16,
+                    activation='linear',
+                    use_bias=True))
+    model.add(Dense(units=8,
+                    activation='linear',
+                    use_bias=True))
     model.add(Dense(units=env.action_space.n,
-                    activation='linear', use_bias=False))
+                    activation='linear',
+                    use_bias=True))
     model.compile(loss='mse', optimizer='adam')
     model.summary()
     return model

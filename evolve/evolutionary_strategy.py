@@ -5,7 +5,7 @@ import os
 import logging
 import numpy as np
 
-from .generate import create_model
+from .generate import _create_model
 
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -89,8 +89,8 @@ class EvolutionaryStrategy():
         self.name = name
         self.env_function = env_function
 
-        self.model_file, self.weights_file = create_model(
-            self.name, self.env_function, model_function)
+        self.model_file, self.weights_file = _create_model(
+            self.name, model_function, self.env_function)
 
         self.population_size = population_size
 
@@ -212,6 +212,11 @@ class EvolutionaryStrategy():
             original_shape = np.array(progeny[layer]).shape
             flat = np.reshape(progeny[layer], -1)
 
+            padded_layer = False
+            if len(original_shape) == 1:
+                original_shape += (1, )
+                padded_layer = True
+
             layer_mutations = int(self.mutation_rate *
                                   np.multiply(*original_shape))
             while layer_mutations != 0:
@@ -223,6 +228,9 @@ class EvolutionaryStrategy():
                 flat[chromosome_index] = (
                     high - low) * np.random.sample() + low
                 layer_mutations -= 1
+
+            if padded_layer:
+                original_shape = original_shape[:-1]
 
             progeny[layer] = flat.reshape(original_shape)
 
