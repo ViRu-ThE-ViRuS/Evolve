@@ -11,7 +11,4 @@ echo "setup virtualenv"
 . $VENV_NAME/bin/activate
 pip3 install -r requirements.txt
 
-echo "running checks..."
-./scripts/check.sh
-
 echo "setup completed!"
