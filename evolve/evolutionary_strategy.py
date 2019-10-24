@@ -15,7 +15,7 @@ logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
-def load_worder(args):
+def load_worker(args):
     '''
     Load the model weights
 
@@ -167,7 +167,7 @@ class EvolutionaryStrategy():
 
         args = [[self.weights_file]]
         results = []
-        for result in self.pool.imap(load_worder, args):
+        for result in self.pool.imap(load_worker, args):
             results.append(result)
         weights = results[0]
 
