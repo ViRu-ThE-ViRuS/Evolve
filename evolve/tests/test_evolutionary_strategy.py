@@ -71,24 +71,4 @@ def test_evolutionary_strategy():
     assert es is not None
     assert es.test_episodes == 1
 
-    candidate, performance1 = es.evolve_step()
-
-    assert isinstance(candidate, np.ndarray)
-    assert isinstance(performance1, float)
-    assert len(candidate) == 2
-
-    candidates, performance2 = es.evolve_step(True)
-
-    assert isinstance(candidates, np.ndarray)
-    assert isinstance(performance2, float)
-    assert len(candidates) == 20
-
-    assert performance2 != performance1
-
-    candidate, performance3 = es.evolve_step()
-    assert performance3 > min(performance1, performance2)
-
-    assert es.mutation_rate < 0.80 and es.mutation < 3.0
-    assert es.selection_cutoff < 0.20
-
     os.remove('demo_model')
