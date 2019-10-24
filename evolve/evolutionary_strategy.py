@@ -226,6 +226,9 @@ class EvolutionaryStrategy():
         n_bred = self.population_size
         progeny = self._breed(selected_population, n_bred)
 
+        if isinstance(progeny, int):  # none survived
+            progeny = self.population
+
         print('\tevaluating progeny...')
         self.population = progeny
         generation_evaluation = self._evaluate(self.population)
@@ -285,6 +288,9 @@ class EvolutionaryStrategy():
         Returns:
             the bred (cross, mutated) progeny
         '''
+
+        if len(population) == 0:
+            return -1
 
         bred = []
         for _ in range(progeny_to_generate):
