@@ -86,10 +86,6 @@ def test_evolutionary_strategy():
     assert performance2 != performance1
 
     candidate, performance3 = es.evolve_step()
-    rewards = es.performance(candidate, get_rewards=True)
-
-    assert isinstance(rewards, list)
-    assert len(rewards[0]) == 50
     assert performance3 > min(performance1, performance2)
 
     assert es.mutation_rate < 0.80 and es.mutation < 3.0
