@@ -1,4 +1,7 @@
 # Evolve
+
+[![CircleCI](https://circleci.com/gh/ViRu-ThE-ViRuS/Evolve.svg?style=svg)](https://circleci.com/gh/ViRu-ThE-ViRuS/Evolve)
+
 ### Evolution Strategy for Tensorflow Keras-Models
 
 Evolution Strategy **(ES)** is an optimisation technique based on ideas of adaptation, evolution, mutation, and breeding. It tries to simulate the natural process of selection, and encompasses the survival of the fittest ideaolgy to train an artificial neural network *(a fundamentally different appraoch than Gradient Descent)* using reinforcement learning.
