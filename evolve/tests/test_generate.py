@@ -13,6 +13,10 @@ def test__create_model():
     import os
 
     def demo_model_function(env):
+        '''
+        Demo model function
+        '''
+
         from tensorflow.keras.models import Sequential
         from tensorflow.keras.layers import Dense
 
@@ -26,6 +30,10 @@ def test__create_model():
         return model
 
     def demo_env_function():
+        '''
+        Demo env function
+        '''
+
         import gym
         return gym.make('CartPole-v0')
 
