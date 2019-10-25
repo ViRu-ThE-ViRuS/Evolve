@@ -15,7 +15,7 @@ logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
-def load_worder(args):
+def load_worker(args):
     '''
     Load the model weights
 
@@ -167,7 +167,7 @@ class EvolutionaryStrategy():
 
         args = [[self.weights_file]]
         results = []
-        for result in self.pool.imap(load_worder, args):
+        for result in self.pool.imap(load_worker, args):
             results.append(result)
         weights = results[0]
 
@@ -225,6 +225,9 @@ class EvolutionaryStrategy():
         print('\tbreeding from selected population...')
         n_bred = self.population_size
         progeny = self._breed(selected_population, n_bred)
+
+        if isinstance(progeny, int):  # none survived
+            progeny = self.population
 
         print('\tevaluating progeny...')
         self.population = progeny
@@ -285,6 +288,9 @@ class EvolutionaryStrategy():
         Returns:
             the bred (cross, mutated) progeny
         '''
+
+        if len(population) == 0:
+            return -1
 
         bred = []
         for _ in range(progeny_to_generate):
