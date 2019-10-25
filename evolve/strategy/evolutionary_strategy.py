@@ -9,7 +9,8 @@ import logging
 import numpy as np
 
 from evolve.generate import _create_model
-from .workers import load_worker, evaluate_worker, performance_worker
+from .workers import load_worker, evaluate_worker, \
+    performance_worker, breed_worker
 
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -187,25 +188,32 @@ class EvolutionaryStrategy():
 
     def _breed(self, population, progeny_to_generate):
         '''
-        Breed within the given population to generate progeny.
-        Involves crossing, mutating.
+            Breed within the given population to generate progeny.
+            Involves crossing, mutating.
 
-        Arguments:
-            population -- the population to breed within
-            progeny_to_generate -- the number of progeny to generate
+            Arguments:
+                population -- the population to breed within
+                progeny_to_generate -- the number of progeny to generate
 
-        Returns:
-            the bred (cross, mutated) progeny
+            Returns:
+                the bred (cross, mutated) progeny
         '''
 
         if len(population) == 0:
             return -1
 
-        bred = []
+        args = []
         for _ in range(progeny_to_generate):
             left, right = np.random.choice(len(population), 2)
             parents = [population[left], population[right]]
-            progeny = self._mutate(self._crossover(parents))
+            args.append([parents,
+                         self.n_layers, self.mutation_rate, self.mutation,
+                         self.variable_crossed_progeny,
+                         self.model_file, self.env_function,
+                         self.test_episodes])
+
+        bred = []
+        for progeny in self.pool.imap_unordered(breed_worker, args):
             bred.append(progeny)
 
         return np.array(bred)
