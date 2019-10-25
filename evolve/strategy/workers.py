@@ -29,7 +29,8 @@ def evaluate_worker(args):
     Evaluate a given candidate
 
     Arguments:
-        args -- [candidate, model_file, env_function, test_episodes, population_index]
+        args -- [candidate, model_file, env_function,
+            test_episodes, population_index]
 
     Returns:
         [population_index, average rewards over test_episodes]
