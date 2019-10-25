@@ -108,6 +108,8 @@ class EvolutionaryStrategy():
         print('\tselecting from population...')
         if self.evolution - 1:
             self.selection_cutoff *= self.selection_cutoff_decay_rate
+            self.mutation_rate *= self.mutation_decay_rate
+            self.mutation *= self.mutation_decay_rate
 
         n_selected = int(self.population_size * self.selection_cutoff)
 
@@ -218,10 +220,6 @@ class EvolutionaryStrategy():
         Returns:
             the mutated progeny
         '''
-
-        if self.evolution - 1:
-            self.mutation_rate *= self.mutation_decay_rate
-            self.mutation *= self.mutation_decay_rate
 
         for layer in np.random.choice(
                 np.arange(self.n_layers),
