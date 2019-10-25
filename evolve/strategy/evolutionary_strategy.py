@@ -4,108 +4,16 @@ EvolutionStrategy trainer class
 
 from multiprocessing.pool import Pool
 import multiprocessing as mp
-import pickle
 import os
 import logging
 import numpy as np
 
-from .generate import _create_model
+from evolve.generate import _create_model
+from .workers import load_worker, evaluate_worker, \
+    performance_worker, breed_worker
 
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-
-def load_worker(args):
-    '''
-    Load the model weights
-
-    Arguments:
-        args -- [weights_file]
-
-    Returns:
-        The weights list from the weights_file
-    '''
-
-    weights_file = args[0]
-    with open(weights_file, 'rb') as file:
-        weights = pickle.load(file)
-
-    return weights
-
-
-def evaluate_worker(args):
-    '''
-    Evaluate a given candidate
-
-    Arguments:
-        args -- [candidate, model_file, env_function, test_episodes, population_index]
-
-    Returns:
-        [population_index, average rewards over test_episodes]
-    '''
-
-    candidate, model_file, env_function, test_episodes, index = args
-    from tensorflow.keras.models import load_model
-    from tensorflow.keras import backend as K
-
-    model = load_model(model_file)
-    model.set_weights(candidate)
-    env = env_function()
-
-    rewards = []
-    for _ in range(test_episodes):
-        state = env.reset()
-        total_reward = 0
-        done = False
-
-        while not done:
-            action = np.argmax(model.predict(
-                np.expand_dims(state, axis=0)))
-            state, reward, done, _ = env.step(action)
-            total_reward += reward
-
-        rewards.append(total_reward)
-
-    K.clear_session()
-    return [index, np.average(rewards)]
-
-
-def performance_worker(args):
-    '''
-    Evaluate the performance of the given candidate
-
-    Arguments:
-        args -- [candidate, model_file, env_function, test_episodes]
-
-    Returns:
-        rewards of the candidate over test_episodes
-    '''
-
-    candidate, model_file, env_function, test_episodes = args
-
-    from tensorflow.keras.models import load_model
-    from tensorflow.keras import backend as K
-
-    model = load_model(model_file)
-    model.set_weights(candidate)
-    env = env_function()
-
-    rewards = []
-    for _ in range(test_episodes):
-        state = env.reset()
-        total_reward = 0
-        done = False
-
-        while not done:
-            action = np.argmax(model.predict(
-                np.expand_dims(state, axis=0)))
-            state, reward, done, _ = env.step(action)
-            total_reward += reward
-
-        rewards.append(total_reward)
-
-    K.clear_session()
-    return rewards
 
 
 class EvolutionaryStrategy():
@@ -201,6 +109,8 @@ class EvolutionaryStrategy():
         print('\tselecting from population...')
         if self.evolution - 1:
             self.selection_cutoff *= self.selection_cutoff_decay_rate
+            self.mutation_rate *= self.mutation_decay_rate
+            self.mutation *= self.mutation_decay_rate
 
         n_selected = int(self.population_size * self.selection_cutoff)
 
@@ -278,25 +188,32 @@ class EvolutionaryStrategy():
 
     def _breed(self, population, progeny_to_generate):
         '''
-        Breed within the given populatino to generate progeny.
-        Involves crossing, mutating.
+            Breed within the given population to generate progeny.
+            Involves crossing, mutating.
 
-        Arguments:
-            population -- the population to breed within
-            progeny_to_generate -- the number of progeny to generate
+            Arguments:
+                population -- the population to breed within
+                progeny_to_generate -- the number of progeny to generate
 
-        Returns:
-            the bred (cross, mutated) progeny
+            Returns:
+                the bred (cross, mutated) progeny
         '''
 
         if len(population) == 0:
             return -1
 
-        bred = []
+        args = []
         for _ in range(progeny_to_generate):
             left, right = np.random.choice(len(population), 2)
             parents = [population[left], population[right]]
-            progeny = self._mutate(self._crossover(parents))
+            args.append([parents,
+                         self.n_layers, self.mutation_rate, self.mutation,
+                         self.variable_crossed_progeny,
+                         self.model_file, self.env_function,
+                         self.test_episodes])
+
+        bred = []
+        for progeny in self.pool.imap_unordered(breed_worker, args):
             bred.append(progeny)
 
         return np.array(bred)
@@ -311,10 +228,6 @@ class EvolutionaryStrategy():
         Returns:
             the mutated progeny
         '''
-
-        if self.evolution - 1:
-            self.mutation_rate *= self.mutation_decay_rate
-            self.mutation *= self.mutation_decay_rate
 
         for layer in np.random.choice(
                 np.arange(self.n_layers),

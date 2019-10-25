@@ -2,8 +2,8 @@
 Tests for evolve/evolutionary_strategy
 '''
 
-from evolve.evolutionary_strategy import load_worker
-from evolve.evolutionary_strategy import EvolutionaryStrategy
+from evolve.strategy import EvolutionaryStrategy
+from evolve.strategy.workers import load_worker
 
 
 def test_load_worker():
@@ -60,7 +60,6 @@ def test_evolutionary_strategy():
         - if sample setup runs with convergence
     '''
 
-    import numpy as np
     import os
 
     es = EvolutionaryStrategy('demo', demo_model_function, demo_env_function,
