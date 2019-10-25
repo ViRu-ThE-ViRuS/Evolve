@@ -6,3 +6,6 @@ pylint **/**.py *.py
 
 echo ">>pytest"
 pytest
+
+echo ">>cleanup"
+./scripts/cleanup.sh
