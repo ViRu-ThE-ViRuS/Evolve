@@ -185,7 +185,7 @@ class EvolutionaryStrategy():
 
     def _breed(self, population, progeny_to_generate):
         '''
-        Breed within the given populatino to generate progeny.
+        Breed within the given population to generate progeny.
         Involves crossing, mutating.
 
         Arguments:
