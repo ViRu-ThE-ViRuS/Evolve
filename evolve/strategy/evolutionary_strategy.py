@@ -304,7 +304,7 @@ class EvolutionaryStrategy():
 
         return progeny
 
-    def performance(self, candidate, test_episodes=50, get_rewards=False):
+    def performance(self, candidate, test_episodes=10, get_rewards=False):
         '''
         Evaluate the performance of the given candidate over the given episodes
 
