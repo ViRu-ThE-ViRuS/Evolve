@@ -26,11 +26,10 @@ class EvolutionaryStrategy():
 
     def __init__(self, name, model_function, env_function,
                  population_size=50,
-                 mutation=3.0, mutation_rate=0.80, mutation_decay=True,
-                 mutation_decay_rate=0.99,
+                 mutation=3.0, mutation_rate=0.80, mutation_decay_rate=0.95,
                  variable_crossed_progeny=True,
-                 selection_cutoff=0.20, selection_cutoff_decay=True,
-                 selection_cutoff_decay_rate=0.95, test_episodes=5):
+                 selection_cutoff=0.20, selection_cutoff_decay_rate=0.95,
+                 test_episodes=5):
         '''
         Constructor
 
@@ -41,13 +40,10 @@ class EvolutionaryStrategy():
             population_size -- size of the population to breed
             mutation -- amount of possible mutation for a given feature
             mutation_rate -- how many possible features to mutate
-            mutation_decay -- decay the mutation_rate and mutation?
             mutation_decay_rate -- decay rate for mutation_rate and mutation
             variable_crossed_progeny -- non uniform dependence of progeny on parents,
                                         based on their individual performance
             selection_cutoff -- selection_cutoff
-            selection_cutoff_decay -- decay the number of candidates selected from
-                                        the given population?
             selection_cutoff_decay_rate -- decay rate for the selection_cutoff
             test_episodes -- number of episodes to evaluate the given candidate over
         '''
@@ -64,11 +60,10 @@ class EvolutionaryStrategy():
         self.test_episodes = test_episodes
 
         self.mutation_rate = mutation_rate
-        self.mutation_decay_rate = mutation_decay_rate if mutation_decay else 1
+        self.mutation_decay_rate = mutation_decay_rate
         self.mutation = mutation
 
-        self.selection_cutoff_decay_rate = selection_cutoff_decay_rate \
-            if selection_cutoff_decay else 1
+        self.selection_cutoff_decay_rate = selection_cutoff_decay_rate
         self.selection_cutoff = selection_cutoff
 
         self.pool = Pool(processes=mp.cpu_count())
