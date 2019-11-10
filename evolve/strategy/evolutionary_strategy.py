@@ -140,9 +140,9 @@ class EvolutionaryStrategy():
         best_performance = generation_evaluation[0, 1]
         average_performance = np.average(generation_evaluation[:, 1])
 
-        print('evolution {}: top_generation_performance = {}, '
+        print('\ttop_generation_performance = {}, '
               'average_generation_performance = {}'.format(
-                  self.evolution, best_performance, average_performance))
+                  best_performance, average_performance))
 
         self._previous_scores = generation_evaluation
 
