@@ -46,12 +46,11 @@ def model_function(env):
     return model
 
 
-ES = evolve.EvolutionaryStrategy('demo', model_function, env_function,
-                                 population_size=50, mutation_decay_rate=0.95,
-                                 selection_cutoff=0.40, selection_cutoff_decay_rate=0.90)
+ES = evolve.EvolutionaryStrategy(
+    'demo', model_function, env_function, population_size=20)
 
 EVOLUTION_TRACK = []
-for _ in range(15):
+for _ in range(10):
     candidate, evolution_average = ES.evolve_step()
     EVOLUTION_TRACK.append(evolution_average)
 
