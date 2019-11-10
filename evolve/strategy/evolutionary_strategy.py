@@ -136,7 +136,7 @@ class EvolutionaryStrategy():
             selected_population.append(self.population[index])
 
         if len(self.top_performers) >= round(self.replay_len):
-            print('\tintermixing with top performs from previous {} generations...'
+            print('\tintermixing with top performers from previous {} generations...'
                   .format(round(self.replay_len)))
             selected_population.extend(self.top_performers)
             self.top_performers = []
