@@ -84,6 +84,12 @@ class EvolutionaryStrategy():
 
         os.remove(self.weights_file)
 
+        self.top_performers = []
+        self.replay_len = 2
+
+        self.decay_period = 5
+        self.slowdown = 1.10
+
     def evolve_step(self, return_population=False):
         '''
         Complete one evolution step. Include selection, breeding, and mutation
@@ -102,10 +108,12 @@ class EvolutionaryStrategy():
         print('EVOLUTION {}'.format(self.evolution))
 
         print('\tselecting from population...')
-        if self.evolution - 1:
+        if self.evolution - 1 and not self.evolution % round(self.decay_period):
             self.selection_cutoff *= self.selection_cutoff_decay_rate
             self.mutation_rate *= self.mutation_decay_rate
             self.mutation *= self.mutation_decay_rate
+            self.decay_period *= self.slowdown
+            self.replay_len *= self.slowdown
 
         n_selected = int(self.population_size * self.selection_cutoff)
 
@@ -127,6 +135,12 @@ class EvolutionaryStrategy():
         for index in np.array(selected_candidates[:, 0], dtype=np.int32):
             selected_population.append(self.population[index])
 
+        if len(self.top_performers) >= round(self.replay_len):
+            print('\tintermixing with top performs from previous {} generations...'
+                  .format(round(self.replay_len)))
+            selected_population.extend(self.top_performers)
+            self.top_performers = []
+
         print('\tbreeding from selected population...')
         n_bred = self.population_size
         progeny = self._breed(selected_population, n_bred)
@@ -145,6 +159,11 @@ class EvolutionaryStrategy():
                   best_performance, average_performance))
 
         self._previous_scores = generation_evaluation
+
+        self.top_performers.append(
+            self.population[int(generation_evaluation[0, 0])])
+
+        print('\n')
 
         if not return_population:
             return self.population[int(generation_evaluation[0, 0])], \
