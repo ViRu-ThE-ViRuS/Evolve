@@ -216,8 +216,19 @@ def _crossover(parents, args):
         else:
             p_left, p_right = scores[1, 1], scores[0, 1]
 
-        crossover_p = [p_left / (p_left + p_right),
-                       p_right / (p_left + p_right)]
+        if p_left < 0 and p_right < 0:
+            p_left, p_right = abs(p_right), abs(p_left)
+            total = p_left + p_right
+            p_left, p_right = p_left/total, p_right/total
+        elif p_left < 0:
+            p_left, p_right = 0.10, 0.90
+        elif p_right < 0:
+            p_left, p_right = 0.90, 0.10
+        else:
+            total = p_left + p_right
+            p_left, p_right = p_left/total, p_right/total
+
+        crossover_p = [p_left, p_right]
 
     left, right = parents[0], parents[1]
 

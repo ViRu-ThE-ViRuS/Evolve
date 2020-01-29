@@ -26,11 +26,10 @@ class EvolutionaryStrategy():
 
     def __init__(self, name, model_function, env_function,
                  population_size=50,
-                 mutation=3.0, mutation_rate=0.80, mutation_decay=True,
-                 mutation_decay_rate=0.99,
+                 mutation=3.0, mutation_rate=0.80, mutation_decay_rate=0.95,
                  variable_crossed_progeny=True,
-                 selection_cutoff=0.20, selection_cutoff_decay=True,
-                 selection_cutoff_decay_rate=0.95, test_episodes=5):
+                 selection_cutoff=0.20, selection_cutoff_decay_rate=0.95,
+                 test_episodes=5):
         '''
         Constructor
 
@@ -41,13 +40,10 @@ class EvolutionaryStrategy():
             population_size -- size of the population to breed
             mutation -- amount of possible mutation for a given feature
             mutation_rate -- how many possible features to mutate
-            mutation_decay -- decay the mutation_rate and mutation?
             mutation_decay_rate -- decay rate for mutation_rate and mutation
             variable_crossed_progeny -- non uniform dependence of progeny on parents,
                                         based on their individual performance
             selection_cutoff -- selection_cutoff
-            selection_cutoff_decay -- decay the number of candidates selected from
-                                        the given population?
             selection_cutoff_decay_rate -- decay rate for the selection_cutoff
             test_episodes -- number of episodes to evaluate the given candidate over
         '''
@@ -64,11 +60,10 @@ class EvolutionaryStrategy():
         self.test_episodes = test_episodes
 
         self.mutation_rate = mutation_rate
-        self.mutation_decay_rate = mutation_decay_rate if mutation_decay else 1
+        self.mutation_decay_rate = mutation_decay_rate
         self.mutation = mutation
 
-        self.selection_cutoff_decay_rate = selection_cutoff_decay_rate \
-            if selection_cutoff_decay else 1
+        self.selection_cutoff_decay_rate = selection_cutoff_decay_rate
         self.selection_cutoff = selection_cutoff
 
         self.pool = Pool(processes=mp.cpu_count())
@@ -89,6 +84,12 @@ class EvolutionaryStrategy():
 
         os.remove(self.weights_file)
 
+        self.top_performers = []
+        self.replay_len = 2
+
+        self.decay_period = 5
+        self.slowdown = 1.10
+
     def evolve_step(self, return_population=False):
         '''
         Complete one evolution step. Include selection, breeding, and mutation
@@ -107,10 +108,12 @@ class EvolutionaryStrategy():
         print('EVOLUTION {}'.format(self.evolution))
 
         print('\tselecting from population...')
-        if self.evolution - 1:
+        if self.evolution - 1 and not self.evolution % round(self.decay_period):
             self.selection_cutoff *= self.selection_cutoff_decay_rate
             self.mutation_rate *= self.mutation_decay_rate
             self.mutation *= self.mutation_decay_rate
+            self.decay_period *= self.slowdown
+            self.replay_len *= self.slowdown
 
         n_selected = int(self.population_size * self.selection_cutoff)
 
@@ -132,6 +135,12 @@ class EvolutionaryStrategy():
         for index in np.array(selected_candidates[:, 0], dtype=np.int32):
             selected_population.append(self.population[index])
 
+        if len(self.top_performers) >= round(self.replay_len):
+            print('\tintermixing with top performers from previous {} generations...'
+                  .format(round(self.replay_len)))
+            selected_population.extend(self.top_performers)
+            self.top_performers = []
+
         print('\tbreeding from selected population...')
         n_bred = self.population_size
         progeny = self._breed(selected_population, n_bred)
@@ -145,11 +154,16 @@ class EvolutionaryStrategy():
         best_performance = generation_evaluation[0, 1]
         average_performance = np.average(generation_evaluation[:, 1])
 
-        print('evolution {}: top_generation_performance = {}, '
+        print('\ttop_generation_performance = {}, '
               'average_generation_performance = {}'.format(
-                  self.evolution, best_performance, average_performance))
+                  best_performance, average_performance))
 
         self._previous_scores = generation_evaluation
+
+        self.top_performers.append(
+            self.population[int(generation_evaluation[0, 0])])
+
+        print('\n')
 
         if not return_population:
             return self.population[int(generation_evaluation[0, 0])], \
@@ -304,7 +318,7 @@ class EvolutionaryStrategy():
 
         return progeny
 
-    def performance(self, candidate, test_episodes=50, get_rewards=False):
+    def performance(self, candidate, test_episodes=10, get_rewards=False):
         '''
         Evaluate the performance of the given candidate over the given episodes
 
